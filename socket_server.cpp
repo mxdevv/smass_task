@@ -30,14 +30,22 @@ Socket_server::~Socket_server()
   unlink(path);
 }
 
-void Socket_server::write(char* arr, size_t size)
+void Socket_server::write(unsigned char* data, size_t size)
 {
   if ((conn = accept(sock, NULL, NULL)) < 0) {
     perror("accept");
     throw std::exception();
   }
 
-  ::write(conn, arr, size);
+  t_size = size;
+  int total = 0, n;
+  while(total < len) {
+    n = send(conn, data + total, size - total, 0);
+    if (n == -1) {
+      break;
+    }
+    total += n;
+  }
 
   close(conn);
 }

@@ -19,7 +19,7 @@ int main()
   std::thread([&] {
     char* ret_str = nullptr;
     std::cout << "client run" << std::endl;
-    ret_str = socket_client.read(256);
+    ret_str = socket_client.read();
     std::cout << "ret_str: " << ret_str << std::endl;
   }).detach();
 
@@ -36,7 +36,7 @@ int main()
   std::thread([&] {
     char* ret_str = nullptr;
     std::cout << "client run" << std::endl;
-    ret_str = socket_client.read(256);
+    ret_str = socket_client.read();
     std::cout << "ret_str: " << ret_str << std::endl;
   }).detach();
 

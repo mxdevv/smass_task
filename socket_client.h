@@ -19,7 +19,7 @@ class Socket_client
 public:
   Socket_client(Socket_server& socket_server);
 
-  char* read(size_t size);
+  unsigned char* read();
 };
 
 #endif
