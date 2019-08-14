@@ -24,4 +24,21 @@ int main()
   }).detach();
 
   sleep(1);
+
+  std::thread([&] {
+    char* str = "Hello socket!";
+    std::cout << "server run" << std::endl;
+    socket_server.write(str, strlen(str));
+  }).detach();
+
+  sleep(1);
+
+  std::thread([&] {
+    char* ret_str = nullptr;
+    std::cout << "client run" << std::endl;
+    ret_str = socket_client.read(256);
+    std::cout << "ret_str: " << ret_str << std::endl;
+  }).detach();
+
+  sleep(1);
 }

@@ -7,14 +7,15 @@
 Socket_client::Socket_client(Socket_server& socket_server)
   : socket_server(socket_server)
 {
-  if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-    perror("socket");
-    exit(1);
-  }
+  ;
 }
 
 char* Socket_client::read(size_t size)
 {
+  if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+    perror("socket");
+    throw std::exception();
+  }
 
   if (connect(sock, (struct sockaddr*)&socket_server.saddr,
       socket_server.len) < 0) {
@@ -24,6 +25,9 @@ char* Socket_client::read(size_t size)
 
   char* buf = new char[size];
   ::read(sock, buf, size);
+
+  close(sock);
+
   return buf;
 }
 
