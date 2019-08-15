@@ -22,7 +22,6 @@ int main()
     exit(-1);
   }
 
-  cv::VideoCapture cap;
   cv::namedWindow("ClientVideo", 1);
 
   unsigned char* data;

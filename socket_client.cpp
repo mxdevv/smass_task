@@ -1,7 +1,6 @@
 #ifndef __SOCKET_CLIENT_CPP__
 #define __SOCKET_CLIENT_CPP__
 
-#include <exception>
 #include "socket_client.h"
 
 Socket_client::Socket_client(const char* path)
