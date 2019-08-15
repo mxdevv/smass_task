@@ -13,13 +13,15 @@
 
 class Socket_client
 {
-  Socket_server& socket_server;
+  const char* path;
   int sock;
+  sockaddr_un saddr;                                                            
+  socklen_t len;                                                                
 
 public:
-  Socket_client(Socket_server& socket_server);
+  Socket_client(const char* path);
 
-  unsigned char* read();
+  int read(unsigned char*& data);
 };
 
 #endif

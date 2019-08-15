@@ -15,11 +15,11 @@ int main(int argc, char** argv)
   if (argc >= 2) {
     cap.open(argv[1]);
   } else {
-    return -1;
+    cap.open("sample.mp4");
   }
 
   Socket_server socket_server("/tmp/socket.video.smass");
-  Socket_client socket_client(socket_server);
+  Socket_client socket_client("/tmp/socket.video.smass");
 
   cv::namedWindow("Video", 1);
   while(1) {
@@ -36,7 +36,8 @@ int main(int argc, char** argv)
       socket_server.write(data, size);
     }).detach();
 
-    unsigned char* data2 = socket_client.read();
+    unsigned char* data2;
+    while(!socket_client.read(data2));
 
     cv::Mat frame2(rows, cols, type, data2);
     imshow("Video", frame2);
