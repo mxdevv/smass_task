@@ -1,7 +1,6 @@
 #ifndef __SOCKET_SERVER_CPP__
 #define __SOCKET_SERVER_CPP__
 
-#include <exception>
 #include "socket_server.h"
 
 Socket_server::Socket_server(const char* path)
@@ -37,8 +36,11 @@ int Socket_server::write(unsigned char* data, int size)
   listen(sock, 10);
 
   if ((conn = accept(sock, NULL, NULL)) < 0) {
-    perror("accept");
-    throw std::exception();
+    /*perror("accept");
+    throw std::exception();*/
+    close(conn);
+    close(sock);
+    return 0;
   }
 
   while(!send(conn, &size, sizeof(size), 0));

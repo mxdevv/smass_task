@@ -1,4 +1,8 @@
 #include <thread>
+#include <mutex>
+#include <condition_variable>
+
+#include <unistd.h>
 
 #include <opencv/cv.hpp>
 #include <opencv/highgui.h>
@@ -9,7 +13,12 @@
 #include "cv_video_info.h"
 
 int size;
-int distributor = 0;
+unsigned char* data;
+std::mutex m;
+std::condition_variable cond;
+bool readed = false;
+bool writed = false;
+int writer_i = 0;
 
 int main(int argc, char** argv)
 {
@@ -26,21 +35,44 @@ int main(int argc, char** argv)
 
   while(!socket_server.write((unsigned char*)&info, sizeof(info)));
 
-  while(1) {
-    cv::Mat frame;
-    cap >> frame;
-
-    unsigned char* data = frame.data;
-    size = frame.total() * frame.elemSize();
-
-    if (distributor ^= 1) {
-      std::thread([&] {
-        while(!socket_server.write(data, size));
-      }).join();
-    } else {
-      std::thread([&] {
-        while(!socket_server.write(data, size));
-      }).join();
+  std::thread([&] {
+    while(1) {
+      std::unique_lock<std::mutex> lock(m);
+      cond.wait(lock, []{return readed && writer_i == 0;});
+      while(!socket_server.write(data, size));
+      writed = true;
+      readed = false;
+      cond.notify_all();
     }
-  }
+  }).detach();
+
+  //  дублирующий код, исправить !
+  std::thread([&] {
+    while(1) {
+      std::unique_lock<std::mutex> lock(m);
+      cond.wait(lock, []{return readed && writer_i == 1;});
+      while(!socket_server.write(data, size));
+      writed = true;
+      readed = false;
+      cond.notify_all();
+    }
+  }).detach();
+
+  std::thread([&] {
+    while(1) {
+      std::unique_lock<std::mutex> lock(m);
+      writed = false;
+
+      cv::Mat frame;
+      cap >> frame;
+
+      data = frame.data;
+      size = frame.total() * frame.elemSize();
+
+      readed = true;
+      writer_i ^= 1;
+      cond.notify_all();
+      cond.wait(lock, []{return writed;});
+    }
+  }).join();
 }
