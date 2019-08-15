@@ -17,17 +17,21 @@ Socket_server::~Socket_server()
   unlink(path);
 }
 
-void Socket_server::write(unsigned char* data, int size)
+int Socket_server::write(unsigned char* data, int size)
 {
   if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-    perror("socket");
-    throw std::exception();
+    /*perror("socket");
+    throw std::exception();*/
+    close(sock);
+    return 0;
   }
 
   unlink(path);
   if (bind(sock, (struct sockaddr*)&saddr, len) < 0) {
-    perror("bind");
-    throw std::exception();
+    /*perror("bind");
+    throw std::exception();*/
+    close(sock);
+    return 0;
   }
 
   listen(sock, 10);
@@ -50,6 +54,8 @@ void Socket_server::write(unsigned char* data, int size)
 
   close(conn);
   close(sock);
+
+  return total;
 }
 
 #endif

@@ -21,7 +21,7 @@ int main(int argc, char** argv)
   Socket_server socket_server("/tmp/socket.video.smass");
   Socket_client socket_client("/tmp/socket.video.smass");
 
-  cv::namedWindow("Video", 1);
+  cv::namedWindow("ServerVideo", 1);
   while(1) {
     cv::Mat frame;
     cap >> frame;
@@ -33,17 +33,9 @@ int main(int argc, char** argv)
     size = frame.total() * frame.elemSize();
 
     std::thread([&] {
-      socket_server.write(data, size);
+      while(!socket_server.write(data, size));
     }).detach();
 
-    unsigned char* data2;
-    while(!socket_client.read(data2));
-
-    cv::Mat frame2(rows, cols, type, data2);
-    imshow("Video", frame2);
-
-    delete[] data2;
-
-    if (cv::waitKey(30) >= 0) break;
+    nanosleep((const struct timespec[]){{0, 50000000L}}, NULL);
   }
 }

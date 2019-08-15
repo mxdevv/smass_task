@@ -21,7 +21,7 @@ public:
   Socket_server(const char* path);
   ~Socket_server();
 
-  void write(unsigned char* data, int size);
+  int write(unsigned char* data, int size);
 };
 
 #endif
