@@ -11,7 +11,7 @@
 
 #include "socket_server.cpp"
 #include "socket_client.cpp"
-#include "cv_video_info.h"
+#include "frame_info.cpp"
 
 int size;
 unsigned char* data;
@@ -21,11 +21,12 @@ bool readed = false;
 bool writed = false;
 int writer_i = 0;
 
-void write_frame(Socket_server& socket_server, int id)
+void write_frame(Socket_server& socket_server, Frame_info* info, int id)
 {
   while(1) {
     std::unique_lock<std::mutex> lock(m);
     cond.wait(lock, [&id]{return readed && writer_i == id;});
+    while(!socket_server.write((unsigned char*)info, sizeof(*info)));
     while(!socket_server.write(data, size));
     writed = true;
     readed = false;
@@ -62,14 +63,13 @@ int main(int argc, char** argv)
 
   Socket_server socket_server("/tmp/socket.video.smass");
 
-  cv_video_info info = { CV_8UC3, (int)capture.get(CV_CAP_PROP_FRAME_WIDTH),
-      (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT) };
-
-  while(!socket_server.write((unsigned char*)&info, sizeof(info)));
+  Frame_info info(CV_8UC3,
+      (int)capture.get(CV_CAP_PROP_FRAME_WIDTH),
+      (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
 
   std::array<std::thread, 3> threads {
-      std::thread { write_frame, std::ref(socket_server), 0}, 
-      std::thread { write_frame, std::ref(socket_server), 1},
+      std::thread { write_frame, std::ref(socket_server), &info, 0}, 
+      std::thread { write_frame, std::ref(socket_server), &info, 1},
       std::thread { get_frame, std::ref(capture) } };
 
   for(std::thread& thr : threads) {

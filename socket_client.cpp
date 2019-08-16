@@ -14,15 +14,15 @@ Socket_client::Socket_client(const char* path)
 int Socket_client::read(unsigned char*& data)
 {
   if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-    /*perror("socket");
-    throw std::exception();*/
+    // все ошибки выводим, если не надо перенаправляем в log файл или /dev/null
+    std::cerr << "Socket_client::read(): "; perror("socket");
     close(sock);
     return 0;
   }
 
   if (connect(sock, (struct sockaddr*)&saddr, len) < 0) {
-    /*perror("connect");
-    throw std::exception();*/
+    // все ошибки выводим, если не надо перенаправляем в log файл или /dev/null
+    std::cerr << "Socket_client::read(): "; perror("connect");
     close(sock);
     return 0;
   }
@@ -33,7 +33,7 @@ int Socket_client::read(unsigned char*& data)
   unsigned char* buf = new unsigned char[size];
   int total = 0, n;
   while(total < size) {
-    n = recv(sock, buf + total, size - total, 0);
+    n = recv(sock, buf + total, size - total, MSG_WAITALL);
     if (n == -1) {
       break;
     }
